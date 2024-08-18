@@ -1,0 +1,10 @@
+config.scm
+Makefile.in
+Makefile
+configure
+config.log
+config.status
+build-aux
+aclocal.m4
+autom4te.cache/
+configure~

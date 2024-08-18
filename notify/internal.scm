@@ -121,10 +121,10 @@
   (foreign-library-function "libglib-2.0" "g_variant_new_boolean"
                             #:return-type '*
                             #:arg-types (list int)))
-(define g-variant-new-double
-  (foreign-library-function "libglib-2.0" "g_variant_new_double"
+(define g-variant-new-byte
+  (foreign-library-function "libglib-2.0" "g_variant_new_byte"
                             #:return-type '*
-                            #:arg-types (list double)))
+                            #:arg-types (list uint8)))
 (define g-variant-new-int
   (foreign-library-function "libglib-2.0" "g_variant_new_int32"
                             #:return-type '*
@@ -141,31 +141,30 @@
 
 (define (finalize-g-variant variant)
   (let ((var (slot-ref variant 'var)))
-    (g-variant-unref var)))
+    (g-variant-unref (make-pointer var))))
 
 (define-foreign-object-type <g-variant>
   %make-g-variant
   (var)
   #:finalizer finalize-g-variant)
 
-(define-public (make-g-variant val)
+(define-public (make-g-variant type val)
   (%make-g-variant
-    (pointer-address (cond
-                       ((string?  val) (g-variant-new-string (string->pointer val)))
-                       ((integer? val) (g-variant-new-int val))
-                       ((boolean? val) (g-variant-new-boolean (if val 1 0)))
-                       ((real?    val) (g-variant-new-double val))))))
+    (pointer-address
+      (case type
+        ('string  (g-variant-new-string  (string->pointer val)))
+        ('integer (g-variant-new-int     val))
+        ('boolean (g-variant-new-boolean (if val 1 0)))
+        ('byte    (g-variant-new-byte    val))
+        (else     (error "Unknown type for variant" type))))))
 
 
 
 ;; How to use the low-level api
-;;(let ((variant (g-variant-new (string->pointer "u") 40)))
-;;  (g-variant-unref variant))
-;;
-;;(notify-init (string->pointer "notify.scm"))
-;;(define noti (notify-notification-new
-;;               (string->pointer "Problem!")
-;;               (string->pointer "Device died!")
-;;               %null-pointer))
-;;(notify-notification-set-category noti (string->pointer "device.error"))
-;;(notify-notification-show noti %null-pointer)
+;; (notify-init (string->pointer "notify.scm"))
+;; (define noti (notify-notification-new
+;;                (string->pointer "Problem!")
+;;                (string->pointer "Device died!")
+;;                %null-pointer))
+;; (notify-notification-set-category noti (string->pointer "device.error"))
+;; (notify-notification-show noti %null-pointer)

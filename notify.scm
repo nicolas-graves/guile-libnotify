@@ -65,14 +65,30 @@
 
 
 (define (notification-set-hint notification key value)
- (let ((variant (make-g-variant value)))
-   (notify-notification-set-hint notification
-                                 (string->pointer key)
-                                 (slot-ref variant 'var))))
+  (define (key-type key)
+    (case key
+      ('action-icons   'boolean)
+      ('category       'string)
+      ('desktop-entry  'string)
+      ('image-data     'iiibiiay) ;; Unimplemented
+      ('image-path     'string)
+      ('resident       'boolean)
+      ('sound-file     'string)
+      ('sound-name     'string)
+      ('suppress-sound 'boolean)
+      ('transient      'boolean)
+      ('x              'integer)
+      ('y              'integer)
+      ('urgency        'byte)
+      (else            (error "Unknown hint" key))))
+
+  (let ((variant (make-g-variant (key-type key) value)))
+    (notify-notification-set-hint notification
+                                  (string->pointer (symbol->string key))
+                                  (make-pointer
+                                    (slot-ref variant 'var)))))
 
 (define notification-clear-hints notify-notification-clear-hints)
-
-
 
 (define notification-get-closed-reason notify-notification-get-closed-reason)
 
@@ -81,9 +97,10 @@
 
 
 ;; How to use the higher level interface
-;;(init #:app-name "notify.scm")
-;;(define noti (notification-new "Problem!" #:body "Device died!"))
-;;(notification-set-category noti "device.error")
-;;(notification-set-hint noti "resident" #t) ; This doesn't work yet
-;;(notification-show noti)
-;;(uninit)
+;; (init #:app-name "notify.scm")
+;; (define noti (notification-new "Problem!" #:body "Device died!"))
+;; (notification-set-category noti "device.error")
+;; (notification-set-hint noti 'image-path "file:///home/Ekaitz/clip.png")
+;; (notification-set-hint noti 'urgency 3)
+;; (notification-show noti)
+;; (uninit)

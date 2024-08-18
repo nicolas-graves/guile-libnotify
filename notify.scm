@@ -52,7 +52,13 @@
 (define (notification-set-image-from-pixbuf notification gdk-pixbuf-image)
   (notify-notification-set-image-from-pixbuf notification gdk-pixbuf-image))
 
-(define notification-set-timeout  notify-notification-set-timeout)
+(define (notification-set-timeout notification timeout)
+  (define (timeout->num timeout)
+    (case timeout
+      ('never 0)
+      ('default -1)
+      (else timeout)))
+  (notify-notification-set-timeout notification (timeout->num timeout)))
 
 (define (notification-set-urgency notification urgency)
   (define (urgency->num urgency)

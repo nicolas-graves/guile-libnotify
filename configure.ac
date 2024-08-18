@@ -29,6 +29,7 @@ AM_SILENT_RULES([yes])
 
 AC_PATH_PROG([GUILE], [guile])
 AC_CONFIG_FILES([Makefile notify/config.scm])
+AC_CONFIG_FILES([pre-inst-env], [chmod +x pre-inst-env])
 
 GUILE_PKG([3.0 2.2 2.0])
 GUILE_PROGS

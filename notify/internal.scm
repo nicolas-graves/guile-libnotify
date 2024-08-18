@@ -13,13 +13,11 @@
 ;; https://wiki.archlinux.org/title/Desktop_notifications
 
 (define-module (notify internal)
+  #:use-module (notify config)
   #:use-module (oop goops)
   #:use-module (system foreign)
   #:use-module (system foreign-library)
   #:use-module (system foreign-object))
-
-(define libnotify (load-foreign-library "libnotify"))
-(define glib      (load-foreign-library "libglib-2.0"))
 
 ;; libnotify functions
 (define-public notify-init

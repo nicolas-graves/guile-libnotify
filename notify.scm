@@ -2,6 +2,7 @@
   #:use-module (oop goops)
   #:use-module (system foreign)
   #:use-module ((notify internal) #:prefix internal:)
+  #:use-module (system foreign)
   #:use-module (system foreign-object)
   #:export (notify-init
             notify-uninit
@@ -17,7 +18,8 @@
             notification-set-hint
             notification-clear-hints
             notification-get-closed-reason
-            notification-add-action))
+            notification-add-action
+            notification-clear-actions))
 
 (define-syntax or-NULL
   (syntax-rules ()
@@ -121,15 +123,43 @@
 (define notification-get-closed-reason
   internal:notify-notification-get-closed-reason)
 
-(define* (notification-add-action . things)
-  (error "Unimplemented"))
+(define notification-clear-actions
+  internal:notify-notification-clear-actions)
+
+(define* (notification-add-action notification action label callback user-data
+                                  free-func)
+  (internal:notify-notification-add-action
+    notification
+    (string->pointer action)
+    (string->pointer label)
+    (procedure->pointer void
+                        (lambda (notification action data)
+                          (callback notification
+                                    (pointer->string action)
+                                    (pointer->scm data)))
+                        (list '* '* '*))
+    (scm->pointer user-data)
+    (procedure->pointer void
+                        (lambda (data)
+                          (free-func (pointer->scm data)))
+                        (list '*))))
 
 
-;; How to use the higher level interface
+;; ;; How to use the higher level interface
 ;; (notify-init #:app-name "notify.scm")
 ;; (define noti (notification-new "Problem!" #:body "Device died!"))
 ;; (notification-set-category noti "device.error")
 ;; (notification-set-hint noti 'image-path "file:///home/Ekaitz/clip.png")
 ;; (notification-set-hint noti 'urgency 3)
+;;
+;; ;; This will only work if there's a GLib MainLoop
+;; ;; https://gnome.pages.gitlab.gnome.org/libsoup/glib/glib-The-Main-Event-Loop.html
+;; (notification-add-action noti
+;;                          "action-name"
+;;                          "Close the notification"
+;;                          (lambda (notification action data)
+;;                            (display "action\n"))
+;;                          #f
+;;                          identity)
 ;; (notification-show noti)
 ;; (notify-uninit)

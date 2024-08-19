@@ -90,7 +90,12 @@
 (define-public notify-notification-add-action
   (foreign-library-function libnotify "notify_notification_add_action"
                             #:return-type void
-                            #:arg-types (list '* '* '* '* '*)))
+                            #:arg-types (list '* '* '* '* '* '*)))
+
+(define-public notify-notification-clear-actions
+  (foreign-library-function libnotify "notify_notification_clear_actions"
+                            #:return-type void
+                            #:arg-types (list '*)))
 
 
 ;; We need variants for the hints

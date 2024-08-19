@@ -1,6 +1,5 @@
-(define-module (notify internal)
+(define-module (notify libnotify)
   #:use-module (notify config)
-  #:use-module (oop goops)
   #:use-module (system foreign)
   #:use-module (system foreign-library)
   #:use-module (system foreign-object))
@@ -96,59 +95,6 @@
   (foreign-library-function libnotify "notify_notification_clear_actions"
                             #:return-type void
                             #:arg-types (list '*)))
-
-
-;; We need variants for the hints
-;; How should I integrate this with the garbage collector? I think i need a finalizer
-;; https://www.gnu.org/software/guile/manual/guile.html#Foreign-Objects-and-Scheme-1
-;; https://www.gnu.org/software/guile/manual/html_node/Guardians.html
-
-;; TODO: Implement iiibiiay
-(define g-variant-new
-  (foreign-library-function glib "g_variant_new"
-                            #:return-type '*
-                            #:arg-types (list '* '*)))
-(define g-variant-new-boolean
-  (foreign-library-function glib "g_variant_new_boolean"
-                            #:return-type '*
-                            #:arg-types (list int)))
-(define g-variant-new-byte
-  (foreign-library-function glib "g_variant_new_byte"
-                            #:return-type '*
-                            #:arg-types (list uint8)))
-(define g-variant-new-int
-  (foreign-library-function glib "g_variant_new_int32"
-                            #:return-type '*
-                            #:arg-types (list int)))
-(define g-variant-new-string
-  (foreign-library-function glib "g_variant_new_string"
-                            #:return-type '*
-                            #:arg-types (list '*)))
-
-(define g-variant-unref
-  (foreign-library-function glib "g_variant_unref"
-                            #:return-type void
-                            #:arg-types (list '*)))
-
-(define (finalize-g-variant variant)
-  (let ((var (slot-ref variant 'var)))
-    (g-variant-unref (make-pointer var))))
-
-(define-foreign-object-type <g-variant>
-  %make-g-variant
-  (var)
-  #:finalizer finalize-g-variant)
-
-(define-public (make-g-variant type val)
-  (%make-g-variant
-    (pointer-address
-      (case type
-        ('string  (g-variant-new-string  (string->pointer val)))
-        ('integer (g-variant-new-int     val))
-        ('boolean (g-variant-new-boolean (if val 1 0)))
-        ('byte    (g-variant-new-byte    val))
-        (else     (error "Unknown type for variant" type))))))
-
 
 
 ;; How to use the low-level api

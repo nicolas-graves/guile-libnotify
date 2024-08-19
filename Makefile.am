@@ -24,7 +24,8 @@ godir=$(libdir)/guile/$(GUILE_EFFECTIVE_VERSION)/site-ccache
 SOURCES =					\
   notify.scm					\
   notify/config.scm				\
-  notify/internal.scm
+  notify/glib.scm				\
+  notify/libnotify.scm
 
 EXTRA_DIST +=					\
   pre-inst-env.in				\

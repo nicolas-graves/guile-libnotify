@@ -1,7 +1,8 @@
 (define-module (notify)
   #:use-module (oop goops)
   #:use-module (system foreign)
-  #:use-module ((notify internal) #:prefix internal:)
+  #:use-module ((notify libnotify) #:prefix internal:)
+  #:use-module ((notify glib) #:prefix glib:)
   #:use-module (system foreign)
   #:use-module (system foreign-object)
   #:export (notify-init
@@ -110,12 +111,11 @@
       ('urgency        'byte)
       (else            (error "Unknown hint" key))))
 
-  (let ((variant (internal:make-g-variant (key-type key) value)))
+  (let ((variant (glib:make-g-variant (key-type key) value)))
     (internal:notify-notification-set-hint
       notification
       (string->pointer (symbol->string key))
-      (make-pointer
-        (slot-ref variant 'var)))))
+      (glib:unwrap-g variant))))
 
 (define notification-clear-hints
   internal:notify-notification-clear-hints)
@@ -154,12 +154,17 @@
 ;;
 ;; ;; This will only work if there's a GLib MainLoop
 ;; ;; https://gnome.pages.gitlab.gnome.org/libsoup/glib/glib-The-Main-Event-Loop.html
-;; (notification-add-action noti
-;;                          "action-name"
-;;                          "Close the notification"
-;;                          (lambda (notification action data)
-;;                            (display "action\n"))
-;;                          #f
-;;                          identity)
-;; (notification-show noti)
+;; (let ((loop (glib:make-g-main-loop)))
+;;   ;; We have to learn to make this trigger in dunst, too
+;;   ;; https://dunst-project.org/documentation/#ACTIONS
+;;   (notification-add-action noti
+;;                            "default-action"
+;;                            "Close the notification"
+;;                            (lambda (notification action data)
+;;                              (display "action\n")
+;;                              (glib:g-main-loop-quit loop))
+;;                            #f
+;;                            identity)
+;;   (notification-show noti)
+;;   (glib:g-main-loop-run loop))
 ;; (notify-uninit)

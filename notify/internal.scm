@@ -1,17 +1,3 @@
-;; Library for libnotify control.
-;;
-;; https://lists.nongnu.org/archive/html/guile-user/2016-01/msg00000.html
-;: https://gnome.pages.gitlab.gnome.org/libnotify/
-;;
-;; The spec:
-;; https://specifications.freedesktop.org/notification-spec/1.2/index.html
-;;
-;; Examples in python
-;; https://www.devdungeon.com/content/desktop-notifications-linux-python
-;;
-;; Arch wiki
-;; https://wiki.archlinux.org/title/Desktop_notifications
-
 (define-module (notify internal)
   #:use-module (notify config)
   #:use-module (oop goops)

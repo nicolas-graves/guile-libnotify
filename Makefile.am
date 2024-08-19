@@ -28,7 +28,7 @@ SOURCES =					\
 
 EXTRA_DIST +=					\
   pre-inst-env.in				\
-  README					\
+  README.md					\
   guix.scm
 
 .PHONY: publish

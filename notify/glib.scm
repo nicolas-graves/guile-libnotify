@@ -4,17 +4,15 @@
   #:use-module (system foreign)
   #:use-module (system foreign-library)
   #:use-module (system foreign-object)
-  #:export (make-g-variant
-            make-g-main-loop
+  #:export (g-variant-new
+            g-main-loop-new
             g-main-loop-is-running
             g-main-loop-run
             g-main-loop-quit
             unwrap-g
             g-signal-disconnect
-            g-signal-connect))
-
-(define (unwrap-g x)
-  (make-pointer (slot-ref x 'var)))
+            g-signal-connect
+            wrap-g-object))
 
 ;; We need variants for the hints
 ;; How should I integrate this with the garbage collector? I think i need a finalizer
@@ -22,49 +20,44 @@
 ;; https://www.gnu.org/software/guile/manual/html_node/Guardians.html
 
 ;; TODO: Implement iiibiiay
-(define g-variant-new
-  (foreign-library-function glib "g_variant_new"
-                            #:return-type '*
-                            #:arg-types (list '* '*)))
-(define g-variant-new-boolean
+(define %g-variant-new-boolean
   (foreign-library-function glib "g_variant_new_boolean"
                             #:return-type '*
                             #:arg-types (list int)))
-(define g-variant-new-byte
+(define %g-variant-new-byte
   (foreign-library-function glib "g_variant_new_byte"
                             #:return-type '*
                             #:arg-types (list uint8)))
-(define g-variant-new-int
+(define %g-variant-new-int
   (foreign-library-function glib "g_variant_new_int32"
                             #:return-type '*
                             #:arg-types (list int)))
-(define g-variant-new-string
+(define %g-variant-new-string
   (foreign-library-function glib "g_variant_new_string"
                             #:return-type '*
                             #:arg-types (list '*)))
 
-(define g-variant-unref
+(define %g-variant-unref
   (foreign-library-function glib "g_variant_unref"
                             #:return-type void
                             #:arg-types (list '*)))
 
 (define (finalize-g-variant variant)
-  (g-variant-unref (unwrap-g variant)))
+  (%g-variant-unref (unwrap-g variant)))
 
 (define-foreign-object-type <g-variant>
-  %make-g-variant
+  %wrap-g-variant
   (var)
   #:finalizer finalize-g-variant)
 
-(define (make-g-variant type val)
-  (%make-g-variant
-    (pointer-address
-      (case type
-        ('string  (g-variant-new-string  (string->pointer val)))
-        ('integer (g-variant-new-int     val))
-        ('boolean (g-variant-new-boolean (if val 1 0)))
-        ('byte    (g-variant-new-byte    val))
-        (else     (error "Unknown type for variant" type))))))
+(define (g-variant-new type val)
+  (wrap-g-variant
+    (case type
+      ('string  (%g-variant-new-string  (string->pointer val)))
+      ('integer (%g-variant-new-int     val))
+      ('boolean (%g-variant-new-boolean (if val 1 0)))
+      ('byte    (%g-variant-new-byte    val))
+      (else     (error "Unknown type for variant" type)))))
 
 
 ;; We need some minimal loop support for the actions
@@ -98,13 +91,13 @@
     (%g-main-loop-unref (make-pointer var))))
 
 (define-foreign-object-type <g-main-loop>
-  %make-g-main-loop
+  %wrap-g-main-loop
   (var)
   #:finalizer finalize-g-main-loop)
 
-(define* (make-g-main-loop #:key (context %null-pointer)
-                                 (is-running 0))
-  (%make-g-main-loop (pointer-address (%g-main-loop-new %null-pointer 0))))
+(define* (g-main-loop-new #:key (context %null-pointer)
+                               (is-running 0))
+  (wrap-g-main-loop (%g-main-loop-new %null-pointer 0)))
 
 (define (g-main-loop-is-running loop)
   (= 0 (%g-main-loop-is-running (unwrap-g loop))))
@@ -136,7 +129,7 @@
 
 (define (g-signal-connect instance signal handler data)
   (%g-signal-connect-data
-    instance
+    (unwrap-g instance)
     (string->pointer signal)
     (procedure->pointer void
                         handler
@@ -144,3 +137,27 @@
     (scm->pointer data)
     %null-pointer
     0))
+
+;; GObject support
+(define %g-object-unref
+  (foreign-library-function gobject "g_object_unref"
+                            #:return-type void
+                            #:arg-types (list '*)))
+
+(define (finalize-g-object loop)
+  (let ((var (slot-ref loop 'var)))
+    (%g-object-unref (make-pointer var))))
+
+(define-foreign-object-type <g-object>
+  %wrap-g-object
+  (var)
+  #:finalizer finalize-g-object)
+
+(define (compose f g)
+  (lambda (x) (g (f x))))
+(define wrap-g-object    (compose pointer-address %wrap-g-object))
+(define wrap-g-variant   (compose pointer-address %wrap-g-variant))
+(define wrap-g-main-loop (compose pointer-address %wrap-g-object))
+
+(define (unwrap-g x)
+  (make-pointer (slot-ref x 'var)))

@@ -9,7 +9,9 @@
             g-main-loop-is-running
             g-main-loop-run
             g-main-loop-quit
-            unwrap-g))
+            unwrap-g
+            g-signal-disconnect
+            g-signal-connect))
 
 (define (unwrap-g x)
   (make-pointer (slot-ref x 'var)))
@@ -112,3 +114,33 @@
 
 (define (g-main-loop-run loop)
   (%g-main-loop-run (unwrap-g loop)))
+
+
+; g_signal_connect_data ((instance),
+;                        (detailed_signal),
+;                        (c_handler),
+;                        (data),
+;                        NULL,
+;                        (GConnectFlags) 0)
+
+; https://docs.gtk.org/gobject/func.signal_connect.html
+(define %g-signal-connect-data
+  (foreign-library-function gobject "g_signal_connect_data"
+                            #:return-type unsigned-long
+                            #:arg-types (list '* '* '* '* '* int)))
+; https://docs.gtk.org/gobject/func.signal_handler_disconnect.html
+(define %g-signal-disconnect
+  (foreign-library-function gobject "g_signal_handler_disconnect"
+                            #:return-type void
+                            #:arg-types (list '* unsigned-long)))
+
+(define (g-signal-connect instance signal handler data)
+  (%g-signal-connect-data
+    instance
+    (string->pointer signal)
+    (procedure->pointer void
+                        handler
+                        (list))
+    (scm->pointer data)
+    %null-pointer
+    0))

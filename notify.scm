@@ -165,6 +165,7 @@
 ;;                              (glib:g-main-loop-quit loop))
 ;;                            #f
 ;;                            identity)
+;;   (glib:g-signal-connect noti "closed" (lambda _ (display "closed")) #f)
 ;;   (notification-show noti)
 ;;   (glib:g-main-loop-run loop))
 ;; (notify-uninit)

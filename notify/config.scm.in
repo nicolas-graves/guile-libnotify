@@ -4,4 +4,5 @@
 
 (define-public libnotify (load-foreign-library "@LIBNOTIFY_LIBDIR@/libnotify"))
 (define-public glib      (load-foreign-library "@GLIB_LIBDIR@/libglib-2.0"))
+(define-public gobject   (load-foreign-library "@GLIB_LIBDIR@/libgobject-2.0"))
 

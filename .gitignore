@@ -10,3 +10,7 @@ autom4te.cache/
 configure~
 pre-inst-env
 *.go
+*.info
+.dirstamp
+version.texi
+stamp-vti

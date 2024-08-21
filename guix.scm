@@ -20,7 +20,7 @@
                       #:recursive? #t
                       #:select? (git-predicate %source-dir)))
   (build-system gnu-build-system)
-  (native-inputs (list autoconf automake pkg-config #;texinfo))
+  (native-inputs (list autoconf automake pkg-config texinfo))
   (inputs (list guile-3.0-latest libnotify))
   (synopsis "Guile bindings for libnotify")
   (description "Provides bindings for GNOME's libnotify C library to Guile")

@@ -32,4 +32,6 @@ EXTRA_DIST +=					\
   README.md					\
   guix.scm
 
+info_TEXINFOS = doc/guile-libnotify.texi
+
 .PHONY: publish

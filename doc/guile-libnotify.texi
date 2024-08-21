@@ -1,0 +1,430 @@
+\input texinfo
+@c -*-texinfo-*-
+
+@c %**start of header
+@setfilename guile-libnotify.info
+@documentencoding UTF-8
+@settitle Guile Libnotify Reference Manual
+@c %**end of header
+
+@include version.texi
+
+@copying
+Copyright @copyright{} 2023 Ekaitz Zarraga
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A
+copy of the license is included in the section entitled ``GNU Free
+Documentation License''.
+@end copying
+
+@dircategory The Algorithmic Language Scheme
+@direntry
+* Guile Libnotify: (notify).
+@end direntry
+
+@titlepage
+@title Guile Libnotify Manual
+@author Ekaitz
+
+@page
+@vskip 0pt plus 1filll
+Edition @value{EDITION} @*
+@value{UPDATED} @*
+
+@insertcopying
+@end titlepage
+
+@contents
+
+@c *********************************************************************
+@node Top
+@top Guile Libnotify: (notify)
+
+This document describes Guile Libnotify version @value{VERSION}.
+
+@menu
+* Introduction::                What is libnotify
+* Installation::                How to install
+* How to use::                  How to use Guile-Libnotify
+* Example::                     Usage example
+* Development::                 Taking part and improving Guile-Libnotify
+@end menu
+
+@c *********************************************************************
+@node Introduction
+@chapter Introduction
+
+Libnotify is a GNOME library for desktop notifications that follow the
+FreeDesktop standard for notifications. This project provides Guile bindings
+for Libnotify.
+
+@node Installation
+@chapter Installation
+
+With Guix you can just:
+
+@example
+$ guix install -f guix.scm
+@end example
+
+If you want to develop or install it in a different distribution you have to do
+all from source @ref{Building from source}.
+
+@node Dependencies
+@section Dependencies
+
+@subsection Run-time dependencies
+
+@itemize
+@item
+@code{libnotify}
+@item
+@code{glib}
+@end itemize
+
+@subsection Development dependencies
+
+@itemize
+@item
+@code{autoconf}
+@item
+@code{automake}
+@item
+@code{pkg-config}
+@item
+@code{texinfo}
+@item
+@code{make}
+@end itemize
+
+@node Building from source
+@section Building from source
+
+Like other GNU projects you can build this using autotools and make.
+Make sure you have the dependencies (both run-time and dev) installed.
+
+@example
+$ ./bootstrap.sh
+$ ./configure
+$ make
+@end example
+
+If you wish to install you can @command{make install}, too. It may require
+sudo.
+
+@node How to use
+@chapter How to use
+
+@example
+(use-modules (notify))
+@end example
+
+@c TODO
+
+@url{https://specifications.freedesktop.org/notification-spec/latest/}
+
+@node Initialization
+@section Initialization
+
+First you need to initialize the notification context. Use @code{notify-init}
+for that.
+
+@deffn {Procedure} notify-init #:key app-name
+
+Initializes the notification context. Should be uninitialized with
+@code{notify-uninit}.
+
+@itemize
+@item
+@var{app-name}: String with the name of the application
+@end itemize
+@end deffn
+
+@deffn {Procedure} notify-uninit
+
+Uninitializes the notification context that has been previously initialized
+with @code{notify-init}.
+
+@end deffn
+
+
+@node Creating notifications
+@section Creating notifications
+
+Once the notification context is created you can generate notifications using
+@code{notification-new}.
+
+@deffn {Procedure} notification-new summary #:key body icon
+
+Creates a new notification object.
+
+@itemize
+@item
+@var{summary}: The summary message of the notification
+@item
+@var{body}: Optional body
+@item
+@var{icon}: Optional icon url
+@end itemize
+@end deffn
+
+Once created, notifications can be manipulated with a set of functions.
+
+@deffn {Procedure} notification-update notification summary #:key body icon
+
+Updates an existing notification object.
+
+@itemize
+@item
+@var{notification}: Notification to update. Create them with
+@code{notification-new}
+@item
+@var{summary}: The summary message of the notification
+@item
+@var{body}: Optional body
+@item
+@var{icon}: Optional icon url
+@end itemize
+@end deffn
+
+@node Showing and closing notifications
+@section Showing and closing notifications
+
+Also you can show the notification or close an open one.
+
+@deffn {Procedure} notification-show notification
+
+Show the notification.
+
+@itemize
+@item
+@var{notification}: Notification to show.
+@end itemize
+@end deffn
+
+@deffn {Procedure} notification-close notification
+
+Close the notification.
+
+@itemize
+@item
+@var{notification}: Notification to close.
+@end itemize
+@end deffn
+
+
+@node Configuring the notification
+@section Configuring the notification
+
+
+@deffn {Procedure} notification-set-timeout notification timeout
+
+Set notification's timeout time. The time that the notification will live until
+it is closed, that is.
+
+@itemize
+@item
+@var{notification}: Notification to set the timeout to
+@item
+@var{timeout}: Timeout to set in milliseconds or @code{never} or @code{default}
+@end itemize
+@end deffn
+
+
+@deffn {Procedure} notification-set-urgency notification urgency
+
+Set notification's urgency.
+
+@itemize
+@item
+@var{notification}: Notification to set the urgency to
+@item
+@var{urgency}: @code{low}, @code{normal} or @code{critical}
+@end itemize
+@end deffn
+
+
+@deffn {Procedure} notification-set-urgency notification category
+
+Set notification's category.
+
+@itemize
+@item
+@var{notification}: Notification to set the category to
+@item
+@var{cetegory}: The category (string)
+@end itemize
+@end deffn
+
+
+
+@node Manipulating hints
+@section Manipulating hints
+
+@dfn{Hints} are a way to provide extra data to a notification server that the
+server may be able to make use of.
+
+Currently Guile-Libnotify does not support @code{image-data} hint, and it does
+not support any of the deprecated hints of the standard.
+
+@deffn {Procedure} notification-set-hint notification key value
+
+Set notification's hint.
+
+@itemize
+@item
+@var{notification}: Notification to set the hint to
+@item
+@var{key}: The hint to set (symbol)
+@item
+@var{value}: The value of the hint to set. Use the most reasonable type for it:
+booleans for booleans, strings for strings and so on.
+@end itemize
+@end deffn
+
+You can also clear all the hints you set before.
+
+@deffn {Procedure} notification-clear-hints notification
+
+Remove all notification's hints.
+
+@itemize
+@item
+@var{notification}: Notification to remove the hints from
+@end itemize
+@end deffn
+
+
+@node User interaction
+@section User interaction
+
+There are two ways to interact with the user: Actions and detecting when the
+user closes the notification.
+
+User interaction is asynchronous by nature. Guile-Libnotify makes use of the
+same underlying mechanism Libnotify uses for asynchronous event control: Glib's
+main loop. That is explained later in @ref{Running the main loop}.
+
+@node Actions
+@subsection Actions
+
+@dfn{Actions} represent possible interactions user might do, normally rendered
+as a button in the notification. Actions require support from the notification
+manager.
+
+@deffn {Procedure}notification-add-action notification @
+    action label callback user-data free-func
+
+Add a new action to the notification. When the action is taken the callback
+function will be called.
+
+@itemize
+@item
+@var{notification}: Notification to remove the hints from
+@item
+@var{action}: TODO
+@item
+@var{label}: TODO
+@item
+@var{callback}: Notification to remove the hints from
+@item
+@var{user-data}: TODO
+@item
+@var{free-func}: TODO
+@end itemize
+@end deffn
+
+
+@deffn {Procedure} notification-clear-actions notification
+
+Remove all notification's actions.
+
+@itemize
+@item
+@var{notification}: Notification to remove the actions from
+@end itemize
+@end deffn
+
+@node Closed signal
+@subsection Closed signal
+
+The other way is to react to when the user closes the notification. For that,
+you need to use the underlaying Glib mechanism to connect a function to the
+@code{closed} signal. This is explained in @ref{Glib related functionality}.
+
+@node Glib related functionality
+@section Glib related functionality
+
+Some of Libnotify's functionality, mostly user interaction, requires using
+Glib's machinery. Guile-Libnotify provides the minimal set of definitions to
+deal with Glib from Guile easily.
+
+@example
+(use-modules (notify glib))
+@end example
+
+@node Connecting signals
+@subsection Connecting signals
+
+@dfn{Signals} are...
+
+@node Running the main loop
+@subsection Running the main loop
+
+The @dfn{Main Loop}...
+
+
+@c TODO
+
+@node Example
+@chapter Example
+
+@example
+(use-modules (notify)
+             (notify glib))
+
+(notify-init #:app-name "notify.scm")
+(define noti (notification-new "Problem!" #:body "Device died!"))
+(notification-set-category noti "device.error")
+(notification-set-hint noti 'image-path "file:///home/Ekaitz/clip.png")
+(notification-set-hint noti 'urgency 3)
+
+(let ((loop (g-main-loop-new)))
+  (notification-add-action noti
+                           "default-action"
+                           "Close the notification"
+                           (lambda (notification action data)
+                             (display "action\n")
+                             (g-main-loop-quit loop))
+                           #f
+                           identity)
+  (g-signal-connect noti "closed" (lambda _ (display "closed")) #f)
+  (notification-show noti)
+  (g-main-loop-run loop))
+(notify-uninit)
+@end example
+
+
+
+
+
+
+@node Development
+@chapter Development
+
+If you wish to test the code in your development environment, the tools should
+provide you a @command{pre-inst-env} script that enables you to set all the
+environment libraries you need:
+
+@example
+./pre-inst-env
+@end example
+
+On top of that, taking part in the project is similar to any GNU project. You
+can send your patches to the maintainer (see the email in the commits) or in
+the Github mirror.
+
+@bye

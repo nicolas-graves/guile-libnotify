@@ -118,11 +118,14 @@ sudo.
 @node How to use
 @chapter How to use
 
+First, import the module.
+
 @example
 (use-modules (notify))
 @end example
 
-@c TODO
+Also, you should take a look to the Notification Spec by Freedesktop, as it
+describes everything libnotify is able to deal with.
 
 @url{https://specifications.freedesktop.org/notification-spec/latest/}
 
@@ -323,17 +326,22 @@ function will be called.
 
 @itemize
 @item
-@var{notification}: Notification to remove the hints from
+@var{notification}: Notification to add the action to
 @item
-@var{action}: TODO
+@var{action}: The action ID
 @item
-@var{label}: TODO
+@var{label}: Human readable action label
 @item
-@var{callback}: Notification to remove the hints from
+@var{callback}: A procedure to call when the action is triggered. It'll get
+three arguments: the @var{notification}, the @var{action} and the
+@var{user-data}.
 @item
-@var{user-data}: TODO
+@var{user-data}: Arbitrary user data that will be sent to the callback. You are
+responsible for keeping the data in the same memory address and not garbage
+collected.
 @item
-@var{free-func}: TODO
+@var{free-func}: A procedure to be called when the notification is cleared.
+It's goal is to clear user-data. It will get one argument: @code{user-data}.
 @end itemize
 @end deffn
 
@@ -369,15 +377,97 @@ deal with Glib from Guile easily.
 @node Connecting signals
 @subsection Connecting signals
 
-@dfn{Signals} are...
+@dfn{Signals} are the way Glib connects actions that happen in the program with
+callbacks. In our case we only use them to capture when the notification is
+closed.
+
+@deffn {Procedure} g-signal-connect object signal callback data
+
+Connects @var{object}'s @var{signal} to @var{callback}, sending also some
+extra @var{data}. It returns a @var{handler-id} that can be used to remove
+this connection calling @code{g-signal-disconnect}.
+
+@itemize
+@item
+@var{object}: Object to connect to. In our case, a notification.
+@item
+@var{signal}: String with the name of the signal. In our case: @code{"closed"}
+@item
+@var{callback}: Procedure to call when the signal is triggered
+@item
+@var{data}: Data to send to the @var{callback} procedure. You are responsible
+for keeping the data in the same memory address and not garbage collected.
+@end itemize
+@end deffn
+
+@deffn {Procedure} g-signal-disconnect object handler-id
+
+Disconnects (removes) the connection identified by @code{handler-id}
+
+@itemize
+@item
+@var{object}: Object to disconnect from. In our case, a notification.
+@item
+@var{handler-id}: A signal indentifier, obtained from
+@code{g-signal-disconnect}
+@end itemize
+@end deffn
+
 
 @node Running the main loop
 @subsection Running the main loop
 
-The @dfn{Main Loop}...
+The @dfn{Main Loop} is the mechanism GLib provides to wait for events happening
+in the notification (it's an event loop, like the one in JavaScript or Libuv).
+If you want to listen to actions or signals, you must use an event loop.
+
+First, the Main Loop must be created.
+
+@deffn {Procedure} g-main-loop-new
+
+Creates a new Main Loop and returns it.
+
+@end deffn
 
 
-@c TODO
+Once created, the Main Loop can be run. That will give the control to the event
+loop. It will listen to the actions but your execution thread will be captured
+by the event loop.
+
+@deffn {Procedure} g-main-loop-run loop
+
+Runs the provided loop
+
+@itemize
+@item
+@var{loop}: A Main Loop to run.
+@end itemize
+@end deffn
+
+If you want to stop the event loop to let your program continue, you can stop
+the Main Loop.
+
+@deffn {Procedure} g-main-loop-quit loop
+
+Quits the provided loop, stopping it and recovering the execution thread.
+
+@itemize
+@item
+@var{loop}: A Main Loop to stop.
+@end itemize
+@end deffn
+
+@deffn {Procedure} g-main-loop-is-running loop
+
+Returns @code{#t} if @var{loop} is running, @code{#f} otherwise.
+
+@itemize
+@item
+@var{loop}: A Main Loop to check.
+@end itemize
+@end deffn
+
+
 
 @node Example
 @chapter Example

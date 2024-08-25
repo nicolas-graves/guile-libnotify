@@ -138,6 +138,11 @@
     %null-pointer
     0))
 
+(define (g-signal-disconnect instance handler-id)
+  (%g-signal-disconnect
+    (unwrap-g instance)
+    handler-id))
+
 ;; GObject support
 (define %g-object-unref
   (foreign-library-function gobject "g_object_unref"

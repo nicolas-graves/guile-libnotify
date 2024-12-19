@@ -1,6 +1,7 @@
 (define-module (notify glib)
   #:use-module (notify config)
   #:use-module (oop goops)
+  #:use-module (ice-9 match)
   #:use-module (system foreign)
   #:use-module (system foreign-library)
   #:use-module (system foreign-object)
@@ -52,7 +53,7 @@
 
 (define (g-variant-new type val)
   (wrap-g-variant
-    (case type
+    (match type
       ('string  (%g-variant-new-string  (string->pointer val)))
       ('integer (%g-variant-new-int     val))
       ('boolean (%g-variant-new-boolean (if val 1 0)))

@@ -3,6 +3,7 @@
   #:use-module (system foreign)
   #:use-module ((notify libnotify) #:prefix internal:)
   #:use-module ((notify glib) #:prefix glib:)
+  #:use-module (ice-9 match)
   #:use-module (system foreign)
   #:use-module (system foreign-object)
   #:export (notify-init
@@ -82,7 +83,7 @@
 
 (define (notification-set-timeout notification timeout)
   (define (timeout->num timeout)
-    (case timeout
+    (match timeout
       ('never 0)
       ('default -1)
       (else timeout)))
@@ -91,7 +92,7 @@
 
 (define (notification-set-urgency notification urgency)
   (define (urgency->num urgency)
-    (case urgency
+    (match urgency
       ('low      0)
       ('normal   1)
       ('critical 2)))
@@ -102,7 +103,7 @@
 
 (define (notification-set-hint notification key value)
   (define (key-type key)
-    (case key
+    (match key
       ('action-icons   'boolean)
       ('category       'string)
       ('desktop-entry  'string)
@@ -151,29 +152,3 @@
                         (lambda (data)
                           (free-func (pointer->scm data)))
                         (list '*))))
-
-
-;; ;; How to use the higher level interface
-;; (notify-init #:app-name "notify.scm")
-;; (define noti (notification-new "Problem!" #:body "Device died!"))
-;; (notification-set-category noti "device.error")
-;; (notification-set-hint noti 'image-path "file:///home/Ekaitz/clip.png")
-;; (notification-set-hint noti 'urgency 3)
-;;
-;; ;; This will only work if there's a GLib MainLoop
-;; ;; https://gnome.pages.gitlab.gnome.org/libsoup/glib/glib-The-Main-Event-Loop.html
-;; (let ((loop (glib:g-main-loop-new)))
-;;   ;; We have to learn to make this trigger in dunst, too
-;;   ;; https://dunst-project.org/documentation/#ACTIONS
-;;   (notification-add-action noti
-;;                            "default-action"
-;;                            "Close the notification"
-;;                            (lambda (notification action data)
-;;                              (display "action\n")
-;;                              (glib:g-main-loop-quit loop))
-;;                            #f
-;;                            identity)
-;;   (glib:g-signal-connect noti "closed" (lambda _ (display "closed")) #f)
-;;   (notification-show noti)
-;;   (glib:g-main-loop-run loop))
-;; (notify-uninit)

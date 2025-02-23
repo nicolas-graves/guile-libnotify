@@ -577,8 +577,8 @@ Doing the same thing is possible using lower-level libnotify procedures:
 (notify-init #:app-name "notify.scm")
 (define noti (notification-new "Problem!" #:body "Device died!"))
 (notification-set-category noti "device.error")
+(notification-set-urgency noti 'critical)
 (notification-set-hint noti 'image-path "file:///home/Ekaitz/clip.png")
-(notification-set-hint noti 'urgency 3)
 
 (let ((loop (g-main-loop-new)))
   (notification-add-action noti

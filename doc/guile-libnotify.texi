@@ -472,6 +472,26 @@ Returns @code{#t} if @var{loop} is running, @code{#f} otherwise.
 @node Example
 @chapter Example
 
+High-level example using the @code{(notify-send)} module.
+@example
+(use-modules (notify-send))
+
+(notify-send "Problem!"
+  #:body "Device died!"
+  #:app-name "notify.scm"
+  #:category "device.error"
+  #:hints (list `((image-path . "file:///home/Ekaitz/clip.png")
+                  (urgency . 2)))
+  #:actions (list (list "default-action"
+                        "Close the notification"
+                        (lambda (notification action data)
+                          (display "action\n"))
+                          #f
+                          identity))
+  #:on-close (lambda _ (display "closed")))
+@end example
+
+Low-level example using @code{(notify)} and @code{(notify glib)} modules.
 @example
 (use-modules (notify)
              (notify glib))
